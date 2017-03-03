@@ -18,6 +18,19 @@ if ["x${DEFAULT_LOGIN}" = "x" ]; then
    DEFAULT_LOGIN="md.nordu.net" 
 fi
 
+if ["x${RT_OWNER}" = "x" ]; then
+   RT_OWNER="root@localhost"
+fi
+
+# These are the queues to be added to RT manually. They are here so that the RT-mailgate can be setup.
+if ["x${RT_Q1}" = "x" ]; then
+   RT_Q1="rt"
+fi
+
+if ["x${RT_Q2}" = "x" ]; then
+   RT_Q2="bugs"
+fi
+
 KEYDIR=/etc/ssl
 mkdir -p $KEYDIR
 export KEYDIR
@@ -241,6 +254,7 @@ echo "swamid" > /var/www/_lvs.txt
 
 cat>/etc/apache2/sites-available/default-ssl.conf<<EOF
 ServerName ${SP_HOSTNAME}
+FastCgiServer /opt/rt4/sbin/rt-server.fcgi -processes 5 -idle-timeout 300
 <VirtualHost *:443>
         ServerName ${SP_HOSTNAME}
         SSLProtocol All -SSLv2 -SSLv3
@@ -250,7 +264,7 @@ ServerName ${SP_HOSTNAME}
         SSLCertificateFile $KEYDIR/certs/${SP_HOSTNAME}.crt
         ${CHAINSPEC}
         SSLCertificateKeyFile $KEYDIR/private/${SP_HOSTNAME}.key
-        DocumentRoot /var/www/
+        DocumentRoot /opt/rt4/share/html
         
         Alias /shibboleth-sp/ /usr/share/shibboleth/
 
@@ -264,18 +278,129 @@ ServerName ${SP_HOSTNAME}
         CustomLog /var/log/apache2/access.log combined
         ServerSignature off
 
-        AddDefaultCharset utf-8
-
+        Alias /secure /var/www/secure
         <Location /secure>
+                AuthType shibboleth
+                ShibRequireSession On
+                ShibUseHeaders On
+                Options +ExecCGI
+                AddHandler cgi-script .cgi
+        </Location>
+
+
+        ScriptAlias / /opt/rt4/sbin/rt-server.fcgi/
+        <Location />
            AuthType shibboleth
            ShibRequireSession On
+           ShibUseHeaders On
            require valid-user
            Options +ExecCGI
-           AddHandler cgi-script .cgi
+           AddHandler fcgid-script fcgi .fcgi
+        </Location>
+
+        <Location /REST/1.0/NoAuth>
+           SetHandler fastcgi-script
+           allow from all
+           satisfy any
+        </Location>
+        <Location /NoAuth>
+           SetHandler fastcgi-script
+           allow from all
+           satisfy any
+        </Location>
+
+        <Location /Admin>
+           SetHandler fastcgi-script
+           allow from all
+           satisfy any
         </Location>
 
 </VirtualHost>
 EOF
+
+cat>/opt/rt4/etc/RT_SiteConfig.pm<<EOF
+Set(\$rtname , 'Sunet');
+Set(\$Organization , "Sunet");
+Set(\$Timezone , 'Europe/Stockholm');
+Set(\$WebRemoteUserAuth, 1);
+Set(\$WebRemoteUserAutocreate , 1);
+Set(\$LogToSTDERR, "debug");
+Set(\$UserAutocreateDefaultsOnLogin, { 'Privileged' => 0 } );
+
+# These are hacks to enable support for Shibboleth
+Set(\$WebRemoteUserShibboleth, 1);
+Set(\$ExternalSettingsRemoteUser,
+    { 'RemoteUser' =>
+        { 'type'            => 'shib',
+          'auth'            => 0,
+          'info'            => 1,
+          'attr_match_list' =>
+              [ 'Name', 'EmailAddress', 'RealName' ],
+          'attr_map'        =>
+              { 'Name'         => 'HTTP_NAME',
+                'EmailAddress' => 'HTTP_MAIL',
+                'RealName'     => 'HTTP_DISPLAYNAME',
+		'Organization' => 'HTTP_O' }					 }
+    }
+);
+
+Set(\$DatabaseHost   , 'postgres');
+Set(\$DatabaseRTHost , 'postgres');
+Set(\$DatabaseUser , 'postgres');
+Set(\$DatabasePassword , 'password');
+Set(\$DatabaseName , 'postgres');
+
+Set(\$WebPath , "");
+Set(\$WebPort , 443);
+Set(\$WebDomain, '$RT_HOSTNAME');
+Set(\$WebBaseURL , "https://$RT_HOSTNAME:\$WebPort");
+Set(\$WebURL , \$WebBaseURL . \$WebPath . "/");
+
+Set(\$OwnerEmail, '$RT_OWNER');
+Set(\$LoopsToRTOwner, 1);
+Set(\$RTAddressRegexp, '^($RT_Q1|$RT_Q2)(-comment)?\@($RT_HOSTNAME)$');
+
+# Users should still be autocreated by RT as internal users if they
+# fail to exist in an external service; this is so requestors (who
+# are not in LDAP) can still be created when they email in.
+Set(\$AutoCreateNonExternalUsers, 1);
+
+# This is needed to be able to login as the internal root user for init of users etc. May be removed after
+# initial setup of admin accounts/groups has been completed.
+Set(\$WebFallbackToRTLogin, 1);
+
+1;
+EOF
+chown rt-service:rt-service /opt/rt4/etc/RT_SiteConfig.pm
+chmod 660 /opt/rt4/etc/RT_SiteConfig.pm
+
+# Set aliases for rt-mailgate then configure Postfix
+cat >> /etc/aliases <<EOF
+$RT_Q1:         	"|/opt/rt4/bin/rt-mailgate --queue $RT_Q1 --action correspond --url https://$RT_HOSTNAME"
+${RT_Q1}-comment: 	"|/opt/rt4/bin/rt-mailgate --queue $RT_Q1 --action comment --url https://$RT_HOSTNAME"
+$RT_Q2:         	"|/opt/rt4/bin/rt-mailgate --queue $RT_Q2 --action correspond --url https://$RT_HOSTNAME"
+${RT_Q2}-comment: 	"|/opt/rt4/bin/rt-mailgate --queue $RT_Q2 --action comment --url https://$RT_HOSTNAME"
+EOF
+newaliases
+echo "postfix postfix/main_mailer_type string Internet site" > /tmp/preseed.txt
+echo "postfix postfix/mailname string $RT_HOSTNAME" >> /tmp/preseed.txt
+debconf-set-selections /tmp/preseed.txt
+cat >> /opt/postfix.sh <<EOF
+#!/bin/bash
+service postfix start
+touch /var/log/mail.log
+tail -f /var/log/mail.log
+EOF
+chmod +x /opt/postfix.sh
+postconf -e myhostname="$RT_HOSTNAME"
+postconf -e myorigin="$RT_HOSTNAME"
+postconf -e inet_interfaces=all
+postconf -e inet_protocols=ipv4
+postconf -e mydestination="$RT_HOSTNAME",localhost
+postconf -e mynetworks=127.0.0.0/8
+postconf -e relay_domains=
+postconf -e relayhost="$RT_RELAYHOST"
+/opt/postfix.sh &
 
 adduser -- _shibd ssl-cert
 mkdir -p /var/log/shibboleth
