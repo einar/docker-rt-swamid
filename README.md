@@ -14,12 +14,12 @@ You will also have some kind of certificates setup on the host in /etc/ssl and a
 to store the database (for us this'd be /docker/var/lib/postgresql/data on the host). Besides
 these pre-install-issues here's a list of steps to go through...
 
-* Install docker and git (if you havent already) 
-* Clone this repository 
--- git clone https://github.com/SUNET/docker-rt-swamid 
+* Install docker and git (if you havent already)  
+* Clone this repository  
+''' git clone https://github.com/SUNET/docker-rt-swamid '''   
 * Build a local image that you can use with docker run (or as we do, docker-compose) 
--- docker build -t rt-swamid .  
-* With rt-swamid built, create a docker-compose.yml file (like the following example): 
+- docker build -t rt-swamid .  
+* With rt-swamid built, create a docker-compose.yml file (like the following example):  
 ~~~~
 ---
 version: '2'
