@@ -1,10 +1,12 @@
-FROM ubuntu:14.04
+FROM ubuntu:16.04
 MAINTAINER el@sunet.se
 RUN echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selections
+RUN echo 'deb http://se.archive.ubuntu.com/ubuntu/ xenial universe multiverse' > /etc/apt/sources.list.d/multiverse.list
 RUN apt-get -q update
 RUN apt-get -y upgrade
-RUN apt-get -y install apache2 libapache2-mod-shib2 ssl-cert augeas-tools libapache2-mod-php5 libcgi-pm-perl libemail-mime-encodings-perl
-RUN a2enmod rewrite ssl shib2 headers cgi proxy proxy_http
+RUN apt-get -y install apache2 libapache2-mod-shib2 ssl-cert augeas-tools libapache2-mod-php libcgi-pm-perl \
+    libemail-mime-encodings-perl libapache2-mod-fastcgi vim
+RUN a2enmod rewrite ssl shib2 headers cgi proxy proxy_http fastcgi alias
 ENV SP_HOSTNAME sp.example.com
 ENV SP_CONTACT noc@nordu.net
 ENV SP_ABOUT /
@@ -18,7 +20,7 @@ ENV PERL_CPANM_OPT -n
 ## Install tools and libraries
 RUN apt-get update -yqq && \
     apt-get install -yqq --no-install-recommends \
-    build-essential ca-certificates cpanminus curl git gpgv2 graphviz make libexpat1-dev libpq-dev libgd-dev openssl perl && \ 
+    build-essential ca-certificates cpanminus curl git gpgv2 graphviz make libexpat1-dev libpq-dev libgd-dev openssl perl postfix && \
 
 # Create user and group
     groupadd -r rt-service && \
@@ -35,7 +37,7 @@ RUN apt-get update -yqq && \
     ./configure \
         --enable-graphviz \
         --enable-gd \
-        --enable-gpg \
+        --enable-externalauth \
         --with-web-handler=fastcgi \
         --with-bin-owner=rt-service \
         --with-libs-owner=rt-service \
@@ -60,6 +62,10 @@ RUN apt-get update -yqq && \
     rm -rf /preseed.txt /usr/share/doc && \
     rm -rf /usr/local/share/man /var/cache/debconf/*-old
 
+RUN cp /opt/rt4/lib/RT/Interface/Web.pm /opt/rt4/lib/RT/Interface/Web_orig.pm
+ADD Web.pm.patch /Web.pm.patch
+RUN patch /opt/rt4/lib/RT/Interface/Web.pm /Web.pm.patch
+
 RUN chmod 770 /opt/rt4/etc && \
     chmod 660 /opt/rt4/etc/RT_SiteConfig.pm && \
     chown rt-service:www-data /opt/rt4/var && \
@@ -78,4 +84,5 @@ ADD shibd.logger /etc/shibboleth/shibd.logger
 ADD index.php /var/www/
 EXPOSE 443
 EXPOSE 80
+EXPOSE 25
 ENTRYPOINT ["/start.sh"]
