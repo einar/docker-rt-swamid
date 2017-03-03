@@ -17,7 +17,7 @@ these pre-install-issues here's a list of steps to go through...
 * Install docker and git (if you havent already)  
 * Clone this repository  
 ``` git clone https://github.com/SUNET/docker-rt-swamid ```  
-* Build a local image that you can use with docker run (or as we do, docker-compose) 
+* Build a local image that you can use with docker run (or as we do, docker-compose)  
 ``` docker build -t rt-swamid . ```  
 * With rt-swamid built, create a docker-compose.yml file (like the following example):  
 ~~~~
@@ -68,10 +68,10 @@ services:
 ``` docker exec -it rt-swamid bash ```  
 ``` cd /tmp/rt/rt-* ```  
 ``` make initialize-database ```  
-(ps. The make above needs the password supplied for the db in the docker-compose.yml. If it fails, which it often does,  
-     please have a look at the documentation in the README in the directory you're in. Or run it a few times more, which  
+(ps. The make above needs the password supplied for the db in the docker-compose.yml. If it fails, which it often does,
+     please have a look at the documentation in the README in the directory you're in. Or run it a few times more, which
      worked for me. ;) With the volume for the database you only need to complete this schema-db-setup once. ds.)  
-* After these steps you probably want to change the default password for the database and also supply a better password  
+* After these steps you probably want to change the default password for the database and also supply a better password
   for the RT root user before you start editing/changing other stuff. Here are steps to fix this (from inside rt-swamid):  
 ``` docker exec -it rt-swamid bash ```  
 ``` perl -I/opt/rt4/local/lib -I/opt/rt4/lib -MRT -MRT::User -e'RT::LoadConfig();RT::Init(); my $u = RT::User->new($RT::SystemUser); $u->Load("root"); $u->SetPassword("GOOD_PASSWORD_GOES_HERE")' ```    
