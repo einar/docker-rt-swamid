@@ -328,19 +328,17 @@ Set(\$LogToSTDERR, "debug");
 Set(\$UserAutocreateDefaultsOnLogin, { 'Privileged' => 0 } );
 
 # These are hacks to enable support for Shibboleth
-Set(\$WebRemoteUserShibboleth, 1);
+Set(\$WebRemoteUser, 1);
 Set(\$ExternalSettingsRemoteUser,
-    { 'RemoteUser' =>
-        { 'type'            => 'shib',
-          'auth'            => 0,
-          'info'            => 1,
-          'attr_match_list' =>
-              [ 'Name', 'EmailAddress', 'RealName' ],
-          'attr_map'        =>
-              { 'Name'         => 'HTTP_NAME',
-                'EmailAddress' => 'HTTP_MAIL',
-                'RealName'     => 'HTTP_DISPLAYNAME',
-		'Organization' => 'HTTP_O' }					 }
+    { 'RemoteUser'             =>
+        { 'type'               => 'shib',
+          'attr_map'           =>
+              { 'Name'         => [ 'HTTP_EPPN' ],
+                'EmailAddress' => [ 'HTTP_MAIL' ],
+                'RealName'     => [ 'HTTP_DISPLAYNAME','HTTP_CN','HTTP_GIVENNAME' ],
+                'Organization' => [ 'HTTP_O' ]
+              }
+        }
     }
 );
 
