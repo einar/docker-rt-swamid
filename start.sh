@@ -342,7 +342,9 @@ Set(\$ExternalSettingsRemoteUser,
 		'Address1'     => [ 'HTTP_STREET' ],
 		'City'         => [ 'HTTP_L' ],
 		'State'        => [ 'HTTP_ST' ],
-		'Zip'          => [ 'HTTP_POSTALCODE' ]		
+		'Zip'          => [ 'HTTP_POSTALCODE' ]	
+	      }
+	 }
     }
 );
 
