@@ -336,9 +336,13 @@ Set(\$ExternalSettingsRemoteUser,
               { 'Name'         => [ 'HTTP_EPPN' ],
                 'EmailAddress' => [ 'HTTP_MAIL' ],
                 'RealName'     => [ 'HTTP_DISPLAYNAME','HTTP_CN','HTTP_GIVENNAME' ],
-                'Organization' => [ 'HTTP_O' ]
-              }
-        }
+                'Organization' => [ 'HTTP_O' ],
+		'MobilePhone'  => [ 'HTTP_MOBILE' ],
+		'WorkPhone'    => [ 'HTTP_TELEPHONENUMBER' ],
+		'Address1'     => [ 'HTTP_STREET' ],
+		'City'         => [ 'HTTP_L' ],
+		'State'        => [ 'HTTP_ST' ],
+		'Zip'          => [ 'HTTP_POSTALCODE' ]		
     }
 );
 
