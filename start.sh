@@ -31,6 +31,10 @@ if ["x${RT_Q2}" = "x" ]; then
    RT_Q2="bugs"
 fi
 
+if ["x${RT_DEFAULTEMAIL}" = "x" ]; then
+   RT_DEFAULTEMAIL="rt"
+fi
+
 KEYDIR=/etc/ssl
 mkdir -p $KEYDIR
 export KEYDIR
@@ -362,7 +366,7 @@ Set(\$WebURL , \$WebBaseURL . \$WebPath . "/");
 
 Set(\$OwnerEmail, '$RT_OWNER');
 Set(\$LoopsToRTOwner, 1);
-Set(\$RTAddressRegexp, '^($RT_Q1|$RT_Q2)(-comment)?\@($RT_HOSTNAME)$');
+Set(\$RTAddressRegexp, '^($RT_Q1|$RT_Q2)(-comment)?\@($RT_HOSTNAME|$RT_MAILDOMAIN)$');
 
 # Users should still be autocreated by RT as internal users if they
 # fail to exist in an external service; this is so requestors (who
@@ -378,12 +382,14 @@ EOF
 chown rt-service:rt-service /opt/rt4/etc/RT_SiteConfig.pm
 chmod 660 /opt/rt4/etc/RT_SiteConfig.pm
 
-# Set aliases for rt-mailgate then configure Postfix
+# Set aliases for rt-mailgate then configure Postfix, default email was added if you want a generic address as well as queue-specific ones.
 cat >> /etc/aliases <<EOF
-$RT_Q1:         	"|/opt/rt4/bin/rt-mailgate --queue $RT_Q1 --action correspond --url https://$RT_HOSTNAME"
-${RT_Q1}-comment: 	"|/opt/rt4/bin/rt-mailgate --queue $RT_Q1 --action comment --url https://$RT_HOSTNAME"
-$RT_Q2:         	"|/opt/rt4/bin/rt-mailgate --queue $RT_Q2 --action correspond --url https://$RT_HOSTNAME"
-${RT_Q2}-comment: 	"|/opt/rt4/bin/rt-mailgate --queue $RT_Q2 --action comment --url https://$RT_HOSTNAME"
+$RT_Q1:         	     "|/opt/rt4/bin/rt-mailgate --queue $RT_Q1 --action correspond --url https://$RT_HOSTNAME"
+${RT_Q1}-comment: 	     "|/opt/rt4/bin/rt-mailgate --queue $RT_Q1 --action comment --url https://$RT_HOSTNAME"
+$RT_Q2:         	     "|/opt/rt4/bin/rt-mailgate --queue $RT_Q2 --action correspond --url https://$RT_HOSTNAME"
+${RT_Q2}-comment: 	     "|/opt/rt4/bin/rt-mailgate --queue $RT_Q2 --action comment --url https://$RT_HOSTNAME"
+$RT_DEFAULTEMAIL:	     "|/opt/rt4/bin/rt-mailgate --queue $RT_Q1 --action correspond --url https://$RT_HOSTNAME"
+${RT_DEFAULTEMAIL}-comment:  "|/opt/rt4/bin/rt-mailgate --queue $RT_Q1 --action comment --url https://$RT_HOSTNAME"
 EOF
 newaliases
 echo "postfix postfix/main_mailer_type string Internet site" > /tmp/preseed.txt
@@ -400,7 +406,7 @@ postconf -e myhostname="$RT_HOSTNAME"
 postconf -e myorigin="$RT_HOSTNAME"
 postconf -e inet_interfaces=all
 postconf -e inet_protocols=ipv4
-postconf -e mydestination="$RT_HOSTNAME",localhost
+postconf -e mydestination="$RT_MAILDOMAIN","$RT_HOSTNAME",localhost
 postconf -e mynetworks=127.0.0.0/8
 postconf -e relay_domains=
 postconf -e relayhost="$RT_RELAYHOST"
