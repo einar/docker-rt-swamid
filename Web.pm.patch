@@ -1,6 +1,28 @@
---- Web_orig.pm	2017-02-24 15:34:38.000000000 +0000
-+++ Web.pm	2017-03-06 16:03:17.806439342 +0000
-@@ -252,6 +252,34 @@
+--- Web_orig.pm	2017-03-15 14:25:44.000000000 +0000
++++ Web.pm	2017-04-11 08:37:02.137167486 +0000
+@@ -226,6 +226,21 @@
+     return RequestENV('REMOTE_USER') ? lc RequestENV('REMOTE_USER') : RequestENV('REMOTE_USER');
+ }
+ 
++sub utf8_fix {
++
++  my $string = shift;
++
++  # If reasonably sure it's not utf8 already; convert it, else just pass through
++  if ( !utf8::is_utf8($string) and utf8::valid($string) ) {
++     $RT::Logger->debug("String before decode: $string\n");
++     utf8::decode($string);
++     $RT::Logger->debug("String after decode: $string\n");
++     return $string;
++  } else {
++     return $string;
++  }
++
++}
+ 
+ 
+ =head2 WebRemoteUserAutocreateInfo($user);
+@@ -252,6 +267,36 @@
      $user_info{'Comments'} = $comments if defined $comments;
      $user_info{'RealName'} = $realname if defined $realname;
  
@@ -12,6 +34,7 @@
 +	my $settings = RT->Config->Get('ExternalSettingsRemoteUser');
 +	my $config = $settings->{'RemoteUser'};
 +
++
 +        if ($config->{'type'} eq 'shib') {
 +            for (keys(%{$config->{attr_map}})) {
 +		my $rtVar = $_;
@@ -21,6 +44,7 @@
 +		   $RT::Logger->debug("Found header: $envVar[$i] Mapped to RT variable: $rtVar \n"); 
 +		   # Make sure header is not empty before adding it, if empty; see if there's another mapping
 +                   if ((defined($value) and length($value)) and (not defined($user_info{"$rtVar"}))) {
++		      $value = utf8_fix("$value");
 +                      $user_info{"$rtVar"} = $value;
 +                      $RT::Logger->debug("RT variable $rtVar set to $value taken from header $envVar[$i]\n");
 +		   } elsif (defined($user_info{"$rtVar"})) {
