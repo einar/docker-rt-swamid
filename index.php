@@ -115,26 +115,26 @@ body {
            <br/>
            <div class="tab-content">
               <div role="tabpanel" class="tab-pane active" id="swamid">
-                 <a href="/Shibboleth.sso/DS/nordu.net?target=https://<?php echo $_SERVER['SERVER_NAME']?>/secure/" class="btn btn-lg btn-success">Logga in via SWAMID</a> 
+                 <a href="/Shibboleth.sso/DS/nordu.net?target=https://<?php echo $_SERVER['SERVER_NAME']?>/rt/" class="btn btn-lg btn-success">Logga in via SWAMID</a>
               </div>
               <div role="tabpanel" class="tab-pane" id="other">
                  <div class="alert alert-warning">
                     Dessa inloggningsalternativ är bara avsedda för tester och riktar sig till expertanvändare.
                  </div>
                  <ul class="list-unstyled">
-                    <li><a href="/Shibboleth.sso/DS/nordu.net?target=https://<?php echo $_SERVER['SERVER_NAME']?>/secure/">SWAMID</a></li>
-                    <li><a href="/Shibboleth.sso/DS/swamid-test?target=https://<?php echo $_SERVER['SERVER_NAME']?>/secure/">SWAMID Testing</a></li>
-                    <li><a href="/Shibboleth.sso/DS/skolfederation?target=https://<?php echo $_SERVER['SERVER_NAME']?>/secure/">Skolfederation</a></li>
-                    <li><a href="/Shibboleth.sso/DS/kalmar2?target=https://<?php echo $_SERVER['SERVER_NAME']?>/secure/">Kalmar2</a></li>
-                    <li><a href="/Shibboleth.sso/Login/socialproxy?target=https://<?php echo $_SERVER['SERVER_NAME']?>/secure/">SocialProxy</a></li>
-                    <li><a href="/Shibboleth.sso/Login/box-idp.sunet.se?target=https://<?php echo $_SERVER['SERVER_NAME']?>/secure/">SUNET Box gw</a></li>
-                    <li><a href="/Shibboleth.sso/Login/box-idp.nordu.net?target=https://<?php echo $_SERVER['SERVER_NAME']?>/secure/">NORDUnet Box gw</a></li>
-                    <li><a href="/Shibboleth.sso/Login/openidp?target=https://<?php echo $_SERVER['SERVER_NAME']?>/secure/">FEIDE openidp</a></li>
-                    <li><a href="/Shibboleth.sso/DS/loopback?target=https://<?php echo $_SERVER['SERVER_NAME']?>/secure/">Loopback DS (testing)</a></li>
-                    <li><a href="/Shibboleth.sso/DS/nightly.pyff.io?target=https://<?php echo $_SERVER['SERVER_NAME']?>/secure/">pyFF nightly DS</a></li>
-                    <li><a href="/Shibboleth.sso/Login/eduid-dev?target=https://<?php echo $_SERVER['SERVER_NAME']?>/secure/">eduID (dev)</a></li>
-                    <li><a href="/Shibboleth.sso/Login/eduid?target=https://<?php echo $_SERVER['SERVER_NAME']?>/secure/">eduID</a></li>
-                    <li><a href="/Shibboleth.sso/Login/unitedid?target=https://<?php echo $_SERVER['SERVER_NAME']?>/secure/">UnitedID</a></li>
+                    <li><a href="/Shibboleth.sso/DS/nordu.net?target=https://<?php echo $_SERVER['SERVER_NAME']?>/rt/">SWAMID</a></li>
+                    <li><a href="/Shibboleth.sso/DS/swamid-test?target=https://<?php echo $_SERVER['SERVER_NAME']?>/rt/">SWAMID Testing</a></li>
+                    <li><a href="/Shibboleth.sso/DS/skolfederation?target=https://<?php echo $_SERVER['SERVER_NAME']?>/rt/">Skolfederation</a></li>
+                    <li><a href="/Shibboleth.sso/DS/kalmar2?target=https://<?php echo $_SERVER['SERVER_NAME']?>/rt/">Kalmar2</a></li>
+                    <li><a href="/Shibboleth.sso/Login/socialproxy?target=https://<?php echo $_SERVER['SERVER_NAME']?>/rt/">SocialProxy</a></li>
+                    <li><a href="/Shibboleth.sso/Login/box-idp.sunet.se?target=https://<?php echo $_SERVER['SERVER_NAME']?>/rt/">SUNET Box gw</a></li>
+                    <li><a href="/Shibboleth.sso/Login/box-idp.nordu.net?target=https://<?php echo $_SERVER['SERVER_NAME']?>/rt/">NORDUnet Box gw</a></li>
+                    <li><a href="/Shibboleth.sso/Login/openidp?target=https://<?php echo $_SERVER['SERVER_NAME']?>/rt/">FEIDE openidp</a></li>
+                    <li><a href="/Shibboleth.sso/DS/loopback?target=https://<?php echo $_SERVER['SERVER_NAME']?>/rt/">Loopback DS (testing)</a></li>
+                    <li><a href="/Shibboleth.sso/DS/nightly.pyff.io?target=https://<?php echo $_SERVER['SERVER_NAME']?>/rt/">pyFF nightly DS</a></li>
+                    <li><a href="/Shibboleth.sso/Login/eduid-dev?target=https://<?php echo $_SERVER['SERVER_NAME']?>/rt/">eduID (dev)</a></li>
+                    <li><a href="/Shibboleth.sso/Login/eduid?target=https://<?php echo $_SERVER['SERVER_NAME']?>/rt/">eduID</a></li>
+                    <li><a href="/Shibboleth.sso/Login/unitedid?target=https://<?php echo $_SERVER['SERVER_NAME']?>/rt/">UnitedID</a></li>
                  </ul>
               </div>
            </div>
