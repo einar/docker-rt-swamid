@@ -26,13 +26,11 @@ fi
 if ["x${RT_Q1}" = "x" ]; then
    RT_Q1="rt"
 fi
-
 if ["x${RT_Q2}" = "x" ]; then
    RT_Q2="bugs"
 fi
-
-if ["x${RT_DEFAULTEMAIL}" = "x" ]; then
-   RT_DEFAULTEMAIL="rt"
+if ["x${RT_Q3}" = "x" ]; then
+   RT_Q3="general"
 fi
 
 KEYDIR=/etc/ssl
@@ -312,6 +310,11 @@ FastCgiServer /opt/rt4/sbin/rt-server.fcgi -processes 5 -idle-timeout 300
            allow from all
            satisfy any
         </Location>
+        <Location /.well-known>
+           SetHandler fastcgi-script
+           allow from all
+           satisfy any
+        </Location>
 
         <Location /Admin>
            SetHandler fastcgi-script
@@ -346,9 +349,9 @@ Set(\$ExternalSettingsRemoteUser,
 		'Address1'     => [ 'HTTP_STREET' ],
 		'City'         => [ 'HTTP_L' ],
 		'State'        => [ 'HTTP_ST' ],
-		'Zip'          => [ 'HTTP_POSTALCODE' ]	
+		'Zip'          => [ 'HTTP_POSTALCODE' ]
 	      }
-	 }
+	}
     }
 );
 
@@ -366,7 +369,7 @@ Set(\$WebURL , \$WebBaseURL . \$WebPath . "/");
 
 Set(\$OwnerEmail, '$RT_OWNER');
 Set(\$LoopsToRTOwner, 1);
-Set(\$RTAddressRegexp, '^($RT_Q1|$RT_Q2)(-comment)?\@($RT_HOSTNAME|$RT_MAILDOMAIN)$');
+Set(\$RTAddressRegexp, '^($RT_Q1|$RT_Q2|$RT_Q3|$RT_DEFAULTEMAIL|operations)(-comment)?\@$RT_HOSTNAME$');
 
 # Users should still be autocreated by RT as internal users if they
 # fail to exist in an external service; this is so requestors (who
@@ -379,15 +382,21 @@ Set(\$WebFallbackToRTLogin, 1);
 
 1;
 EOF
-chown rt-service:rt-service /opt/rt4/etc/RT_SiteConfig.pm
-chmod 660 /opt/rt4/etc/RT_SiteConfig.pm
+chown rt-service:www-data /opt/rt4/etc/RT_SiteConfig.pm
+chmod 0660 /opt/rt4/etc/RT_SiteConfig.pm
 
-# Set aliases for rt-mailgate then configure Postfix, default email was added if you want a generic address as well as queue-specific ones.
+# We had some issues with permissions for postfix and after that RT, this may not be needed in other installations
+chown root:postdrop /usr/sbin/postqueue /usr/sbin/postdrop && chmod 2555 /usr/sbin/postqueue /usr/sbin/postdrop && chown -R postfix:postfix /var/lib/postfix
+chown -R rt-service:www-data /opt/rt4 && chmod 0770 /opt/rt4/etc && chmod 0770 /opt/rt4/var 
+
+# Set aliases for rt-mailgate then configure Postfix
 cat >> /etc/aliases <<EOF
 $RT_Q1:         	     "|/opt/rt4/bin/rt-mailgate --queue $RT_Q1 --action correspond --url https://$RT_HOSTNAME"
 ${RT_Q1}-comment: 	     "|/opt/rt4/bin/rt-mailgate --queue $RT_Q1 --action comment --url https://$RT_HOSTNAME"
 $RT_Q2:         	     "|/opt/rt4/bin/rt-mailgate --queue $RT_Q2 --action correspond --url https://$RT_HOSTNAME"
-${RT_Q2}-comment: 	     "|/opt/rt4/bin/rt-mailgate --queue $RT_Q2 --action comment --url https://$RT_HOSTNAME"
+${RT_Q2}-comment:            "|/opt/rt4/bin/rt-mailgate --queue $RT_Q2 --action comment --url https://$RT_HOSTNAME"
+$RT_Q3:                      "|/opt/rt4/bin/rt-mailgate --queue $RT_Q3 --action correspond --url https://$RT_HOSTNAME"
+${RT_Q3}-comment:            "|/opt/rt4/bin/rt-mailgate --queue $RT_Q3 --action comment --url https://$RT_HOSTNAME"
 $RT_DEFAULTEMAIL:	     "|/opt/rt4/bin/rt-mailgate --queue $RT_Q1 --action correspond --url https://$RT_HOSTNAME"
 ${RT_DEFAULTEMAIL}-comment:  "|/opt/rt4/bin/rt-mailgate --queue $RT_Q1 --action comment --url https://$RT_HOSTNAME"
 EOF
@@ -406,7 +415,7 @@ postconf -e myhostname="$RT_HOSTNAME"
 postconf -e myorigin="$RT_HOSTNAME"
 postconf -e inet_interfaces=all
 postconf -e inet_protocols=ipv4
-postconf -e mydestination="$RT_MAILDOMAIN","$RT_HOSTNAME",localhost
+postconf -e mydestination="$RT_HOSTNAME",localhost
 postconf -e mynetworks=127.0.0.0/8
 postconf -e relay_domains=
 postconf -e relayhost="$RT_RELAYHOST"
