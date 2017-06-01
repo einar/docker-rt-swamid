@@ -419,6 +419,7 @@ postconf -e mydestination="$RT_HOSTNAME",localhost
 postconf -e mynetworks=127.0.0.0/8
 postconf -e relay_domains=
 postconf -e relayhost="$RT_RELAYHOST"
+postconf -e message_size_limit=41943040
 /opt/postfix.sh &
 
 adduser -- _shibd ssl-cert
