@@ -32,6 +32,12 @@ fi
 if ["x${RT_Q3}" = "x" ]; then
    RT_Q3="general"
 fi
+if ["x${RT_Q4}" = "x" ]; then
+   RT_Q4="questions"
+fi
+if ["x${RT_Q5}" = "x" ]; then
+   RT_Q5="requests"
+fi
 
 KEYDIR=/etc/ssl
 mkdir -p $KEYDIR
@@ -369,7 +375,7 @@ Set(\$WebURL , \$WebBaseURL . \$WebPath . "/");
 
 Set(\$OwnerEmail, '$RT_OWNER');
 Set(\$LoopsToRTOwner, 1);
-Set(\$RTAddressRegexp, '^($RT_Q1|$RT_Q2|$RT_Q3|$RT_DEFAULTEMAIL|operations)(-comment)?\@$RT_HOSTNAME$');
+Set(\$RTAddressRegexp, '^($RT_Q1|$RT_Q2|$RT_Q3|$RT_Q4|$RT_Q5|$RT_DEFAULTEMAIL)(-comment)?\@$RT_HOSTNAME$');
 
 # Users should still be autocreated by RT as internal users if they
 # fail to exist in an external service; this is so requestors (who
@@ -397,6 +403,10 @@ $RT_Q2:         	     "|/opt/rt4/bin/rt-mailgate --queue $RT_Q2 --action corresp
 ${RT_Q2}-comment:            "|/opt/rt4/bin/rt-mailgate --queue $RT_Q2 --action comment --url https://$RT_HOSTNAME"
 $RT_Q3:                      "|/opt/rt4/bin/rt-mailgate --queue $RT_Q3 --action correspond --url https://$RT_HOSTNAME"
 ${RT_Q3}-comment:            "|/opt/rt4/bin/rt-mailgate --queue $RT_Q3 --action comment --url https://$RT_HOSTNAME"
+$RT_Q4:                      "|/opt/rt4/bin/rt-mailgate --queue $RT_Q4 --action correspond --url https://$RT_HOSTNAME"
+${RT_Q4}-comment:            "|/opt/rt4/bin/rt-mailgate --queue $RT_Q4 --action comment --url https://$RT_HOSTNAME"
+$RT_Q5:                      "|/opt/rt4/bin/rt-mailgate --queue $RT_Q5 --action correspond --url https://$RT_HOSTNAME"
+${RT_Q5}-comment:            "|/opt/rt4/bin/rt-mailgate --queue $RT_Q5 --action comment --url https://$RT_HOSTNAME"
 $RT_DEFAULTEMAIL:	     "|/opt/rt4/bin/rt-mailgate --queue $RT_Q1 --action correspond --url https://$RT_HOSTNAME"
 ${RT_DEFAULTEMAIL}-comment:  "|/opt/rt4/bin/rt-mailgate --queue $RT_Q1 --action comment --url https://$RT_HOSTNAME"
 EOF
