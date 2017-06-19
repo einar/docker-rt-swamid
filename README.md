@@ -1,6 +1,5 @@
-### NOTE NOTE NOTE:
-### NOTE NOTE NOTE: This repository has moved to https://github.com/SUNET/docker-rt-swamid <--- Go there instead!!! :)
-### NOTE NOTE NOTE:
+
+### NOTE : This repository has moved to https://github.com/SUNET/docker-rt-swamid <--- Go there instead!!! :)
 
 ==========
 
